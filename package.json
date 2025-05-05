@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
+  "author": "Day Lamiy",
   "license": "ISC",
   "dependencies": {
     "@types/node": "^22.13.11",
