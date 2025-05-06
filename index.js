@@ -7,7 +7,7 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors()); // Autoriser les requêtes cross-origin
+app.use(cors());
 app.use(bodyParser.json());
 
 // Configuration Firebase via .env
@@ -25,7 +25,8 @@ const serviceAccount = {
 };
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: process.env.DATABASE_URL // Assure-toi que DATABASE_URL est bien défini dans .env
 });
 
 // Liste des utilisateurs
@@ -38,13 +39,25 @@ app.get('/utilisateurs', async (req, res) => {
       return allUsers;
     };
 
-    const utilisateurs = await listAllUsers();
-    const simplifié = utilisateurs.map(user => ({
-      uid: user.uid,
-      email: user.email
-    }));
+    const [authUsers, dbSnapshot] = await Promise.all([
+      listAllUsers(),
+      admin.database().ref('utilisateurs').once('value')
+    ]);
 
-    res.json(simplifié);
+    const utilisateursDB = dbSnapshot.val() || {};
+
+    const utilisateurs = authUsers.map(user => {
+      const info = utilisateursDB[user.uid] || {};
+      return {
+        uid: user.uid,
+        email: user.email || "",
+        id: info.id || "",
+        role: info.role || "",
+        lastSeen: info.lastSeen || 0
+      };
+    });
+
+    res.json(utilisateurs);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
