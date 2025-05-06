@@ -1,9 +1,13 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const bodyParser = require('body-parser');
+const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
+
+// Middleware
+app.use(cors()); // Autoriser les requêtes cross-origin
 app.use(bodyParser.json());
 
 // Configuration Firebase via .env
